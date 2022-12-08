@@ -35,6 +35,28 @@ async function run() {
         })
 
 
+        //to  update given contact
+        app.put('/contact/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) };
+            const contact = req.body;
+            console.log(contact)
+            const option = { upsert: true };
+            const updatedContact = {
+                $set: {
+
+                    userName: contact.name,
+                    email: contact.email,
+                    address: contact.address,
+                    phone: contact.phone
+                }
+            }
+            const results = await contactsCollection.updateOne(query, updatedContact, option)
+            res.send(results)
+        });
+
+
+
 
 
     }
