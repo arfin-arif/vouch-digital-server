@@ -1,5 +1,6 @@
 const cors = require('cors');
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 require('dotenv').config();
 const app = express();
@@ -13,13 +14,27 @@ app.use(express.json());
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.qktvmdh.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
+function verifyJWT(req, res, next) {
+    // console.log(req.headers.authorization);
+    const authHeader = req.headers.authorization
+    if (!authHeader) {
+        return res.status(401).send('Unauthorized');
+    }
+    const token = authHeader.split(' ')[1]
+    jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
+        if (err) {
+            return res.status(403).send({ message: 'access forbidden ' })
+        }
+        req.decoded = decoded;
+        next();
+    })
+}
+
 async function run() {
     try {
         const contactsCollection = client.db('vouchDigital').collection('contacts');
-
-
         // to add a new contact.
-        app.post('/contact', async (req, res) => {
+        app.post('/contact', verifyJWT, async (req, res) => {
             const contact = req.body;
             const result = await contactsCollection.insertOne(contact)
             res.send(result)
@@ -57,15 +72,17 @@ async function run() {
 
 
         // to delete any given contact
-        app.delete('/contact/:id', async (req, res) => {
+        app.delete('/contact/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const result = await contactsCollection.deleteOne(query);
             res.send(result)
         })
 
+
+
         // list of contacts with pagination
-        app.get('/contact-by-page', async (req, res) => {
+        app.get('/contact-by-page', verifyJWT, async (req, res) => {
             const page = parseInt(req.query.page);
             const size = parseInt(req.query.size)
             // console.log(page, size)
