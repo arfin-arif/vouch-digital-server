@@ -64,6 +64,18 @@ async function run() {
             res.send(result)
         })
 
+        // list of contacts with pagination
+        app.get('/contact-by-page', async (req, res) => {
+            const page = parseInt(req.query.page);
+            const size = parseInt(req.query.size)
+            // console.log(page, size)
+            const query = {};
+            const cursor = contactsCollection.find(query);
+            const contacts = await cursor.skip(page * size).limit(size).toArray()
+            const count = await contactsCollection.estimatedDocumentCount()
+            res.send({ count, contacts: contacts })
+        })
+
 
     }
     finally {
