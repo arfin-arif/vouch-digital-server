@@ -48,6 +48,33 @@ async function run() {
             const contact = await contactsCollection.findOne(query)
             res.send(contact)
         })
+        // Fetch phase matching results
+
+        // to get particular user products
+
+        app.get('/contacts-by-email', async (req, res) => {
+            let query = {};
+            if (req.query.userEmail) {
+                query = {
+                    userEmail: req.query.userEmail
+                }
+            }
+            const cursor = contactsCollection.find(query)
+            const contacts = await cursor.toArray();
+            res.send(contacts)
+        })
+
+        // list of contacts with pagination
+        app.get('/contact-by-page', verifyJWT, async (req, res) => {
+            const page = parseInt(req.query.page);
+            const size = parseInt(req.query.size)
+            // console.log(page, size)
+            const query = {};
+            const cursor = contactsCollection.find(query);
+            const contacts = await cursor.skip(page * size).limit(size).toArray()
+            const count = await contactsCollection.estimatedDocumentCount()
+            res.send({ count, contacts: contacts })
+        })
 
 
         //to  update given contact
@@ -81,17 +108,6 @@ async function run() {
 
 
 
-        // list of contacts with pagination
-        app.get('/contact-by-page', verifyJWT, async (req, res) => {
-            const page = parseInt(req.query.page);
-            const size = parseInt(req.query.size)
-            // console.log(page, size)
-            const query = {};
-            const cursor = contactsCollection.find(query);
-            const contacts = await cursor.skip(page * size).limit(size).toArray()
-            const count = await contactsCollection.estimatedDocumentCount()
-            res.send({ count, contacts: contacts })
-        })
 
 
     }
