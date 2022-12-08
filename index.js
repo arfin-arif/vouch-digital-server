@@ -15,6 +15,17 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 async function run() {
     try {
+        const contactsCollection = client.db('vouchDigital').collection('contacts');
+
+
+        // to add a new contact.
+        app.post('/contact', async (req, res) => {
+            const contact = req.body;
+            const result = await contactsCollection.insertOne(contact)
+            res.send(result)
+        })
+
+
 
     }
     finally {
