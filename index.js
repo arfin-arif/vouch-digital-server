@@ -26,6 +26,16 @@ async function run() {
         })
 
 
+        // to get  a single  contact data
+        app.get('/contact/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) }
+            const contact = await contactsCollection.findOne(query)
+            res.send(contact)
+        })
+
+
+
 
     }
     finally {
